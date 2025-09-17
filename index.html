@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Stats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-color: #007bff; --secondary-color: #0056b3; --background-color: #f8f9fa; --card-background: rgba(255, 255, 255, 0.8); --text-color: #343a40; --light-text-color: #6c757d; --shadow-color: rgba(0, 0, 0, 0.1); --border-color: rgba(255, 255, 255, 0.3); --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); --backdrop-filter: blur(8px); }
+        html, body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); line-height: 1.6; overflow-x: hidden; scroll-behavior: smooth; }
+        .section-container { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; padding: 2rem; }
+        .section-container.visible { display: flex; }
+        #intro-section { background: linear-gradient(135deg, #e0f2f7 0%, #c1e4f4 100%); color: var(--text-color); position: relative; overflow: hidden; }
+        #intro-section::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M20 30h10v10h-10zM50 0h10v10h-10zM50 60h10v10h-10zM80 30h10v10h-10z" fill="%23b0daef" fill-opacity="0.2" /></svg>'); background-size: 50px 50px; opacity: 0.5; z-index: 0; }
+        .intro-content { position: relative; z-index: 1; }
+        #intro-section h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 0 0 1rem; font-weight: 700; color: var(--primary-color); text-shadow: 1px 1px 2px rgba(0,0,0,0.05); }
+        #intro-section p { font-size: clamp(1.1rem, 4vw, 1.6rem); max-width: 600px; margin-bottom: 2rem; color: var(--light-text-color); }
+        .dob-form-container { background: var(--card-background); backdrop-filter: var(--backdrop-filter); -webkit-backdrop-filter: var(--backdrop-filter); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); padding: 2.5rem 3.5rem; display: flex; flex-direction: column; align-items: center; gap: 2rem; transition: all 0.3s ease-in-out; }
+        .dob-form-container:hover { box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2); }
+        .dob-inputs { display: flex; gap: 1.2rem; justify-content: center; align-items: center; }
+        .dob-inputs input { width: clamp(60px, 15vw, 90px); padding: 0.8rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.5); background-color: rgba(255, 255, 255, 0.3); color: var(--text-color); font-size: clamp(1rem, 3.5vw, 1.2rem); text-align: center; -moz-appearance: textfield; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .dob-inputs input:focus { outline: none; border-color: var(--primary-color); background-color: rgba(255, 255, 255, 0.7); box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15); }
+        .dob-inputs input::-webkit-outer-spin-button, .dob-inputs input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .dob-inputs input::placeholder { color: var(--light-text-color); opacity: 0.7; }
+        button { background-color: var(--primary-color); color: #fff; border: none; padding: 1rem 3rem; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px var(--shadow-color); }
+        button:hover { background-color: var(--secondary-color); transform: translateY(-3px); box-shadow: 0 6px 20px var(--shadow-color); }
+        .alert-message { color: #dc3545; margin-top: 1.5rem; font-size: 1rem; font-weight: 600; display: none; }
+        .alert-message.show { display: block; }
+        #loading-section { background-color: var(--background-color); color: var(--light-text-color); }
+        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: var(--primary-color); animation: spin 1s ease infinite; margin: 0 auto 1.5rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loading-section p { font-style: italic; animation: pulse 1.5s infinite; font-size: 1.1rem; }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+        #results-section, #cta-section { background-color: var(--background-color); padding: 4rem 1rem; text-align: center; }
+        #results-section h2 { font-size: clamp(2rem, 6vw, 3rem); color: var(--primary-color); margin-top: 0; font-weight: 700; }
+        .timeline { position: relative; padding: 2rem 0; max-width: 800px; margin: 0 auto; }
+        .timeline-item { padding: 1.5rem 2rem; position: relative; background-color: var(--card-background); backdrop-filter: var(--backdrop-filter); -webkit-backdrop-filter: var(--backdrop-filter); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); margin: 2rem 0; opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease; }
+        .timeline-item.visible { opacity: 1; transform: translateY(0); }
+        .timeline-item:hover { box-shadow: 0 10px 35px 0 rgba(31, 38, 135, 0.15); }
+        .timeline-item h4 { margin-top: 0; font-size: 1.6rem; color: var(--secondary-color); font-weight: 600; }
+        .timeline-item p { font-size: 1.1rem; color: var(--text-color); }
+        #cta-section { background-color: var(--background-color); color: var(--text-color); border-top: 1px solid #e9ecef; }
+        #cta-section h2 { font-size: clamp(2rem, 6vw, 3rem); margin: 0; color: var(--primary-color); font-weight: 700; }
+        #cta-section p { font-size: clamp(1rem, 3.5vw, 1.3rem); opacity: 0.9; max-width: 700px; margin: 1rem auto 2rem; }
+        .cta-buttons { margin-top: 2rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+        .cta-buttons button { background-color: var(--primary-color); color: #fff; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600; border-radius: 50px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border: none; }
+        .cta-buttons button:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); background-color: var(--secondary-color); }
+        .cta-buttons a { text-decoration: none; }
+        .footer { background-color: #343a40; color: #fff; text-align: center; padding: 1.5rem; font-size: 0.9rem; }
+        @media (max-width: 768px) { .dob-form-container { padding: 2rem; } .dob-inputs { flex-direction: column; gap: 1rem; } .dob-inputs input { width: 180px; } #results-section h2 { font-size: 1.8rem; } #cta-section h2 { font-size: 2rem; } .cta-buttons button { padding: 0.8rem 2rem; font-size: 1rem; } }
+    </style>
+</head>
+<body>
+    <section id="intro-section" class="section-container visible">
+        <div class="intro-content">
+            <h1>Life Stats</h1>
+            <p>Apa yang telah terjadi di dunia sejak kamu lahir?</p>
+            <div class="dob-form-container">
+                <form id="dobForm">
+                    <div class="dob-inputs">
+                        <input type="number" id="day" name="day" placeholder="DD" required min="1" max="31">
+                        <input type="number" id="month" name="month" placeholder="MM" required min="1" max="12">
+                        <input type="number" id="year" name="year" placeholder="YYYY" required min="1900" max="2025">
+                    </div>
+                    <button type="submit" id="submitBtn">Temukan Kisahku</button>
+                    <p id="alert-message" class="alert-message">Masukkan tanggal (DD), bulan (MM), dan tahun (YYYY) dengan benar.</p>
+                </form>
+            </div>
+        </div>
+    </section>
+    <section id="loading-section" class="section-container">
+        <div class="spinner"></div>
+        <p>Memproses kisahmu<span id="loading-dots">...</span></p>
+    </section>
+    <section id="results-section" class="section-container">
+        <h2 id="results-title"></h2>
+        <div class="timeline" id="timeline-container"></div>
+    </section>
+    <section id="cta-section" class="section-container">
+        <h2>Suka dengan web ini?</h2>
+        <p>Dukung kami agar bisa terus berkarya dan membuat fitur-fitur menarik lainnya.</p>
+        <div class="cta-buttons">
+            <a href="https://saweria.co/" target="_blank"><button>Dukung via Saweria</button></a>
+            <button id="shareBtn">Bagikan</button>
+            <button>Berlangganan</button>
+        </div>
+    </section>
+    <footer class="footer">
+        <p>&copy; 2025 Life Stats. Dibuat dengan Gemini AI.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const introSection = document.getElementById('intro-section');
+            const loadingSection = document.getElementById('loading-section');
+            const resultsSection = document.getElementById('results-section');
+            const dobForm = document.getElementById('dobForm');
+            const dayInput = document.getElementById('day');
+            const monthInput = document.getElementById('month');
+            const yearInput = document.getElementById('year');
+            const resultsTitle = document.getElementById('results-title');
+            const timelineContainer = document.getElementById('timeline-container');
+            const alertMessage = document.getElementById('alert-message');
+
+            dobForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const day = dayInput.value;
+                const month = monthInput.value;
+                const year = yearInput.value;
+                if (!validateInput(day, month, year)) {
+                    alertMessage.classList.add('show');
+                    return;
+                }
+                alertMessage.classList.remove('show');
+                
+                introSection.classList.remove('visible');
+                loadingSection.classList.add('visible');
+
+                try {
+                    // PANGGIL SERVERLESS FUNCTION VERCEL
+                    const response = await fetch('/api/gemini_proxy.js', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            birth_year: year
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Gagal mengambil data dari server. Silakan coba lagi.');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    loadingSection.classList.remove('visible');
+                    resultsSection.classList.add('visible');
+                    displayResults(data.facts);
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan. Pastikan file api/gemini_proxy.js ada dan API Key-nya benar.');
+                    loadingSection.classList.remove('visible');
+                    introSection.classList.add('visible');
+                }
+            });
+
+            function validateInput(day, month, year) {
+                if (!day || !month || !year) return false;
+                const d = parseInt(day);
+                const m = parseInt(month);
+                const y = parseInt(year);
+                if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+                const dayValid = d >= 1 && d <= 31;
+                const monthValid = m >= 1 && m <= 12;
+                const yearValid = y >= 1900 && y <= new Date().getFullYear();
+                if (dayValid && monthValid && yearValid) {
+                    const testDate = new Date(y, m - 1, d);
+                    return testDate.getFullYear() === y && (testDate.getMonth() + 1) === m && testDate.getDate() === d;
+                }
+                return false;
+            }
+
+            function displayResults(allFacts) {
+                const birthYear = allFacts[0].year;
+                const currentYear = allFacts[allFacts.length - 1].year;
+                resultsTitle.textContent = `Lini Masa Hidupmu dari ${birthYear} hingga ${currentYear}`;
+                timelineContainer.innerHTML = '';
+                
+                allFacts.forEach(yearData => {
+                    const yearTitle = document.createElement('h3');
+                    yearTitle.textContent = yearData.year;
+                    yearTitle.style.textAlign = 'center';
+                    yearTitle.style.color = 'var(--primary-color)';
+                    yearTitle.style.fontSize = '2.5rem';
+                    yearTitle.style.fontWeight = '700';
+                    yearTitle.style.margin = '3rem 0 1.5rem';
+                    timelineContainer.appendChild(yearTitle);
+                    
+                    yearData.facts.forEach((fact, index) => {
+                        const timelineItem = document.createElement('div');
+                        timelineItem.classList.add('timeline-item');
+                        timelineItem.innerHTML = `<h4>${fact.title}</h4><p>${fact.description}</p>`;
+                        timelineContainer.appendChild(timelineItem);
+                        
+                        setTimeout(() => {
+                            timelineItem.classList.add('visible');
+                        }, index * 150);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
