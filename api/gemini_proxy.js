@@ -1,15 +1,10 @@
-// Serverless Function untuk Vercel
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Pastikan untuk menyetel API key sebagai Environment Variable di Vercel
-// KEY: GEMINI_API_KEY
-// VALUE: [KUNCI API ANDA DI SINI]
 const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
 export default async function handler(req, res) {
-    // Memastikan ini adalah metode POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -27,14 +22,12 @@ export default async function handler(req, res) {
             const response = await result.response;
             const textResult = response.text();
             
-            // Membersihkan respons dari format markdown yang mungkin ada
             const jsonString = textResult.replace(/```json\n|```/g, '').trim();
 
             try {
                 const parsedData = JSON.parse(jsonString);
                 allFacts.push(parsedData);
             } catch (parseError) {
-                // Menangani jika respons API tidak valid JSON
                 console.error(`Error parsing JSON for year ${year}:`, parseError, jsonString);
                 allFacts.push({
                     year: year,
