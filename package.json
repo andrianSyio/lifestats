@@ -1,0 +1,13 @@
+{
+  "name": "life-stats-project",
+  "version": "1.0.0",
+  "description": "A web project to display life stats using Gemini AI.",
+  "main": "api/gemini_proxy.js",
+  "scripts": {
+    "start": "node api/gemini_proxy.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.11.0"
+  },
+  "private": true
+}
